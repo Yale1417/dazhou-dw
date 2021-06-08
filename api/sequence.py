@@ -1,13 +1,9 @@
 # !/usr/bin/python3
 # -*- coding: utf-8 -*-
-# @Time : 2021/6/4 下午3:52
+# @Time : 2021/6/8 下午4:12
 # @Author : Latent
 # @Email : latentsky@gmail.com
-# @File : yesy的萨.py
+# @File : filter.py
 # @Software: PyCharm
-# @class :
+# @class : 序列器 -> 对所有的json进行验证
 
-a = []
-
-for i in a :
-    print(i)
