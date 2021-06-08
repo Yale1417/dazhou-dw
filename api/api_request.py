@@ -10,7 +10,7 @@
 
 import json5
 import requests
-
+import os
 
 class api_request(object):
 
@@ -18,8 +18,8 @@ class api_request(object):
         "Accept-Encoding": "gzip",
         "Connection": "close"
     }
-    key = 'tel18120751524'
-    secret = '20210429'
+    key = os.environ.get('WB_API_KEY')
+    secret =  os.environ.get('WB_API_SECRET')
 
     # 搜索列表
     def get_search(self, api_url, keyword, page, **kwargs):
@@ -33,9 +33,9 @@ class api_request(object):
         return data
 
     # 详情列表
-    def get_details(self, url, num_iid):
-        base_url = f''
-        responses = requests.get(url=url, headers=self.headers)
+    def get_details(self, api_url, num_iid):
+        base_url = f'{api_url}?key={self.key}&secret={self.secret}&num_iid=520813250866&is_promotion=1'
+        responses = requests.get(url=base_url, headers=self.headers)
         data = json5.loads(responses, encoding='utf-8')
         return data
 
