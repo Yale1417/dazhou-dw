@@ -6,11 +6,14 @@
 # @File : mongo.py
 # @Software: PyCharm
 # @class : mongoDB -> Data is stored
+
 from pymongo import MongoClient
 from pymongo.errors import DuplicateKeyError
+import hashlib
+import time
 
 
-class mongo(object):
+class Mongo(object):
 
     def __init__(self):
         self.mongo = MongoClient('mongodb://admin:123456@192.168.0.16', 27017, )
@@ -33,8 +36,27 @@ class mongo(object):
             pass
 
     @classmethod
-    def mongo_insert(cls, tableName, data):
+    def mongo_insert(cls, tableName, data, keyword, platform):
+        # add to keyword/_id/request_time/
+        data['keyword'] = keyword
+        data['request_date'] = time.strftime('%Y-%m-%d')
+        data['platform'] = platform
+        data['_id'] = hashlib.md5(bytes(data['title'] + str(data['num_iid']) +
+                                        str(data['sales']) + str(data['request_date'] +
+                                        str(data['platform'])),
+                                  encoding='utf-8')).hexdigest()
+
         try:
             tableName.insert(data)
         except DuplicateKeyError:
+            print('==>数据更新')
             tableName.update({"_id": data['_id']}, data)
+
+    """
+    通过时间和关键词来查询商品列表的num_iid
+    """
+    @classmethod
+    def mongo_query(cls, tableName, keyword, requestDate):
+        pass
+
+

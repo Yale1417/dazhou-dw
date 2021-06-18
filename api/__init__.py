@@ -5,5 +5,15 @@
 # @Email : latentsky@gmail.com
 # @File : __init__.py.py
 # @Software: PyCharm
-# @PS :
+# @PS : run main class
+
+from elec import Elec
+import sys
+
+sys.path.append('/home/latent-lxx/Latent/Latent/dazhou-dw/python/lib/python3.9/site-packages')
+
+
+# keywords = ['即食燕窝','鲜炖燕窝','即食花胶','即食鲍鱼','即食海参','佛跳墙','玻尿酸饮品','燕窝多肽',
+#            '冻干燕窝','鱼胶冻']
+Elec().api_search(keyword='即食燕窝', platform='jingdong', is_all=True,)
 

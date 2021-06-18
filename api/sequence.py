@@ -7,3 +7,23 @@
 # @Software: PyCharm
 # @class : 序列器 -> 对所有的json进行验证
 
+class Sequence(object):
+
+
+    # Determine whether it is empty
+
+    @classmethod
+    def kill_list_none(cls, json):
+        if json:
+            return json
+        else:
+            return None
+
+
+
+
+
+
+
+
+
