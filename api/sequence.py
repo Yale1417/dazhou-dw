@@ -11,7 +11,6 @@ class Sequence(object):
 
 
     # Determine whether it is empty
-
     @classmethod
     def kill_list_none(cls, json):
         if json:

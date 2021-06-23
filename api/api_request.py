@@ -22,12 +22,10 @@ class API_Request(object):
     secret = os.environ.get('WB_API_SECRET')
 
     # 搜索列表---
-    def get_search(self, api_url, keyword, page, start_price=0, end_price=0,
-                   cat=0, discount_only='', sort='', page_size=''):
-        base_url = f"{api_url}?key={self.key}&secret={self.secret}&q={keyword}" \
-                   f"&start_price={start_price}&end_price={end_price}" \
-                   f"&page={page}&cat={cat}&discount_only={discount_only}" \
-                   f"&sort={sort}&page_size={page_size}&seller_info=&nick=&ppath="
+    def get_search(self, platform, keyword, page, start_price=0, end_price=0, ):
+        local_args = locals()
+        base_url = self.create_urls(platform=platform, kwargs=local_args)
+        # 打印请求链接
         print(base_url)
         responses = requests.get(url=base_url, headers=self.headers)
         try:
@@ -45,5 +43,20 @@ class API_Request(object):
         return data
 
     # 不同平台链接构造
+    def create_urls(self, platform, kwargs: dict):
+        platform_url = {'taobao': f"https://api-gw.onebound.cn/taobao/item_search/?"
+                                  f"key={self.key}&secret={self.secret}&q={kwargs['keyword']} "
+                                  f"&start_price={kwargs['start_price']}&end_price={kwargs['end_price']}"
+                                  f"&page={kwargs['page']}"
+                                  f"&cat=0&discount_only=&sort=&page_size=&seller_info=&nick=&ppath=&imgid=&filter=",
+                        'jingdong': f"https://api-gw.onebound.cn/jd/item_search/?"
+                                    f"key={self.key}&secret={self.secret}&q={kwargs['keyword']}"
+                                    f"&start_price={kwargs['start_price']}&end_price={kwargs['end_price']}"
+                                    f"&page={kwargs['page']}&"
+                                    f"cat=0&discount_only=&sort=&seller_info=no&nick=&seller_info=&nick=&ppath=&imgid=&filter=",
+                        'pdd': '',
+                        'suning': '',
 
+                        }
 
+        return platform_url[platform]
