@@ -16,7 +16,7 @@ import os
 class API_Request(object):
     headers = {
         "Accept-Encoding": "gzip",
-        "Connection": "close"
+        "Connection": "close",
     }
     key = os.environ.get('WB_API_KEY')
     secret = os.environ.get('WB_API_SECRET')
@@ -24,39 +24,63 @@ class API_Request(object):
     # 搜索列表---
     def get_search(self, platform, keyword, page, start_price=0, end_price=0, ):
         local_args = locals()
-        base_url = self.create_urls(platform=platform, kwargs=local_args)
+        base_url = self.create_search_urls(platform=platform, kwargs=local_args)
         # 打印请求链接
         print(base_url)
-        responses = requests.get(url=base_url, headers=self.headers)
+        responses = requests.get(url=base_url, headers=self.headers, )
         try:
             data = json5.loads(responses.content, encoding='utf-8')
             return data
+
         except ValueError:
             pass
 
     # 详情列表
-    def get_details(self, api_url, num_iid):
-        base_url = f'{api_url}?key={self.key}&secret={self.secret}&num_iid={num_iid}' \
-                   f'&is_promotion=1'
+    def get_details(self, platform, num_iid):
+        base_url = API_Request().create_details_urls(platform=platform, num_iid=num_iid)
         responses = requests.get(url=base_url, headers=self.headers)
         data = json5.loads(responses, encoding='utf-8')
         return data
 
-    # 不同平台链接构造
-    def create_urls(self, platform, kwargs: dict):
-        platform_url = {'taobao': f"https://api-gw.onebound.cn/taobao/item_search/?"
-                                  f"key={self.key}&secret={self.secret}&q={kwargs['keyword']} "
+    # 搜索url
+    def create_search_urls(self, platform, kwargs: dict):
+        search_url = {'taobao': f"https://api-gw.onebound.cn/taobao/item_search/?"
+                                f"key={self.key}&secret={self.secret}&q={kwargs['keyword']} "
+                                f"&start_price={kwargs['start_price']}&end_price={kwargs['end_price']}"
+                                f"&page={kwargs['page']}"
+                                f"&cat=0&discount_only=&sort=&page_size=&seller_info=&nick=&ppath=&imgid=&filter=",
+                      'jingdong': f"https://api-gw.onebound.cn/jd/item_search/?"
+                                  f"key={self.key}&secret={self.secret}&q={kwargs['keyword']}"
                                   f"&start_price={kwargs['start_price']}&end_price={kwargs['end_price']}"
-                                  f"&page={kwargs['page']}"
-                                  f"&cat=0&discount_only=&sort=&page_size=&seller_info=&nick=&ppath=&imgid=&filter=",
-                        'jingdong': f"https://api-gw.onebound.cn/jd/item_search/?"
-                                    f"key={self.key}&secret={self.secret}&q={kwargs['keyword']}"
-                                    f"&start_price={kwargs['start_price']}&end_price={kwargs['end_price']}"
-                                    f"&page={kwargs['page']}&"
-                                    f"cat=0&discount_only=&sort=&seller_info=no&nick=&seller_info=&nick=&ppath=&imgid=&filter=",
-                        'pdd': '',
-                        'suning': '',
+                                  f"&page={kwargs['page']}&"
+                                  f"cat=0&discount_only=&sort=&seller_info=no&nick=&seller_info=&nick=&ppath=&imgid="
+                                  f"&filter=",
+                      'pdd': f"https://api-gw.onebound.cn/pinduoduo/item_search/?"
+                             f"key={self.key}&secret={self.secret}&q={kwargs['keyword']}"
+                             f"&start_price={kwargs['start_price']}&end_price={kwargs['end_price']}"
+                             f"&page={kwargs['page']}"
+                             f"&cat=0&discount_only=&sort=&page_size=",
+                      'suning': f"https://api-gw.onebound.cn/suning/item_search/?"
+                                f"key={self.key}&secret={self.secret}&q={kwargs['keyword']}"
+                                f"&start_price={kwargs['start_price']}&end_price={kwargs['end_price']}"
+                                f"&page={kwargs['page']}"
+                                f"&cat=&discount_only=&sort=&page_size=&seller_info=&nick=&ppath=",
 
-                        }
+                      }
 
-        return platform_url[platform]
+        return search_url[platform]
+
+    # 详情url
+    def create_details_urls(self, platform, num_iid):
+        details_url = {'taobao': f"https://api-gw.onebound.cn/taobao/item_get/"
+                                 f"?key={self.key}&secret={self.secret}"
+                                 f"&num_iid={num_iid}&is_promotion=1",
+                       'jingdong': f"https://api-gw.onebound.cn/jd/item_get/"
+                                   f"?key={self.key}&secret={self.secret}"
+                                   f"&num_iid={num_iid}",
+                       'pdd': f"https://api-gw.onebound.cn/pinduoduo/item_get/"
+                              f"?key={self.key}&secret={self.secret}"
+                              f"&num_iid={num_iid}"
+                       }
+
+        return details_url[platform]

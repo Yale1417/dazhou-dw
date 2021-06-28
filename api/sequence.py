@@ -9,20 +9,16 @@
 
 class Sequence(object):
 
-
     # Determine whether it is empty
     @classmethod
-    def kill_list_none(cls, json):
-        if json:
-            return json
-        else:
-            return None
-
-
-
-
-
-
-
-
+    def kill_list_none(cls, data:dict):
+        # 请求验证
+        try:
+            if data['items']['item']:
+                return data
+            else:
+                print('--> item列表为空')
+                return None
+        except KeyError:
+            print('==>key错误,字典中没有item属性...')
 
