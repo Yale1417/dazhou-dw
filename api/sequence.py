@@ -22,3 +22,19 @@ class Sequence(object):
         except KeyError:
             print('==>key错误,字典中没有item属性...')
 
+    # 检验data是否正常
+    @classmethod
+    def validation_data(cls, data):
+        try:
+            num_iid = data['item']['num_iid']
+            title = data['item']['title']
+            if num_iid and title is not None:
+                print('--> data正常')
+                return data
+
+        except Exception as e:
+            print(data)
+            print('==> 返回值检验未通过....')
+            return None
+
+

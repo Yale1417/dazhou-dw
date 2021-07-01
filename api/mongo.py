@@ -37,9 +37,11 @@ class Mongo(object):
             tableName.create_index([(indexName, 1)], unique=True)
         except DuplicateKeyError:
             pass
+
     """
     api-search数据插入
     """
+
     @classmethod
     def mongo_insert(cls, tableName, data, keyword, platform, page):
         # add to keyword/_id/request_time/
@@ -47,27 +49,30 @@ class Mongo(object):
         data['request_date'] = time.strftime('%Y-%m-%d')
         data['platform'] = platform
         data['page'] = page
-        data['_id'] = hashlib.md5(bytes(data['title'] + str(data['num_iid']) +
-                                        str(data['sales']) + str(data['request_date'] +
-                                                                 str(data['platform'])),
-                                        encoding='utf-8')).hexdigest()
+        try:
+            data['_id'] = hashlib.md5(bytes(data['title'] + str(data['num_iid']) +
+                                            str(data['sales']) + str(data['request_date'] +
+                                                                     str(data['platform'])),
+                                            encoding='utf-8')).hexdigest()
+        except Exception:
+            print(data)
         try:
             tableName.insert(data)
         except DuplicateKeyError:
             print('==>数据更新')
             tableName.update({"_id": data['_id']}, data)
 
-
-
     """
     通过时间/页面来查询商品列表的num_iid
     """
+
     @classmethod
-    def mongo_query(cls, tableName, startDate, endDate, page, platform):
+    def mongo_query(cls, tableName, startDate, endDate, start_page, end_page, platform):
         match = {
-            "$match": {"$and": [{"page": {"$lt": page}},
-                                {"request_date": {"$gt": startDate,
-                                                  "$lt": endDate}},
+            "$match": {"$and": [{"page": {"$gt": start_page,
+                                          "$lt": end_page}},
+                                {"request_date": {"$gte": startDate,
+                                                  "$lte": endDate}},
                                 {"platform": platform}
                                 ]
                        }

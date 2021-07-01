@@ -11,6 +11,7 @@
 import json5
 import requests
 import os
+from sequence import Sequence
 
 
 class API_Request(object):
@@ -21,6 +22,8 @@ class API_Request(object):
     key = os.environ.get('WB_API_KEY')
     secret = os.environ.get('WB_API_SECRET')
 
+    # 请求次数限制
+
     # 搜索列表---
     def get_search(self, platform, keyword, page, start_price=0, end_price=0, ):
         local_args = locals()
@@ -28,19 +31,19 @@ class API_Request(object):
         # 打印请求链接
         print(base_url)
         responses = requests.get(url=base_url, headers=self.headers, )
-        try:
-            data = json5.loads(responses.content, encoding='utf-8')
-            return data
 
-        except ValueError:
-            pass
+        data = json5.loads(responses.content, encoding='utf-8')
+        return data
 
     # 详情列表
     def get_details(self, platform, num_iid):
         base_url = API_Request().create_details_urls(platform=platform, num_iid=num_iid)
-        responses = requests.get(url=base_url, headers=self.headers)
-        data = json5.loads(responses, encoding='utf-8')
-        return data
+        responses = requests.get(url=base_url, headers=self.headers,)
+        data = Sequence.validation_data(json5.loads(responses.text, encoding='utf-8', ))
+        if data is not None:
+            return data
+        else:
+            API_Request.write_id(num_iid=num_iid)
 
     # 搜索url
     def create_search_urls(self, platform, kwargs: dict):
@@ -84,3 +87,9 @@ class API_Request(object):
                        }
 
         return details_url[platform]
+
+    #  记录请求失败的id
+    @classmethod
+    def write_id(cls, num_iid):
+        with open('item_id.txt', 'a+') as f:
+            f.write(str(num_iid) + '\n')

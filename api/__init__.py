@@ -8,7 +8,6 @@
 # @PS : run main class
 
 from elec import Elec
-from mongo import Mongo
 
 # # 淘宝搜索
 # keywords = ['即食燕窝','鲜炖燕窝','即食花胶','即食鲍鱼','即食海参','佛跳墙','玻尿酸饮品','燕窝多肽',
@@ -16,10 +15,14 @@ from mongo import Mongo
 # for keyword in keywords:
 #     Elec().api_search(keyword=keyword, platform='taobao',is_all=True)
 
-tables = Mongo().mongo_get_tables()
+# 商品详情获取
 
+items = Elec.get_list_id(startDate='2021-06-01',
+                         endDate='2021-06-31',
+                         start_page=0,
+                         end_page=11,
+                         platform='jingdong')
+Elec.api_details(items=items)
 
-
-
-for i in data:
-    print(i)
+# 淘宝测试
+# Elec().taobao_details()

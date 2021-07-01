@@ -61,47 +61,61 @@ class Elec(object):
         else:
             pass
 
-
-    """
-    api_details 获取详情
-    """
+    # -->2. api_details 获取详情
     @classmethod
-    def api_details(cls, platform, ):
-        pass
+    def api_details(cls, items: dict):
+        for item in items:
+            print(item)
+            data = API_Request().get_details(platform=item['platform'],
+                                             num_iid=item['num_iid'])
+
+            # data['keyword'] = item['keyword']
+            # data['platform'] = item['platform']
+            # data['page'] = item['page']
+            # Elec.details_parse(jsons=data['item'], keyword=item['keyword'],
+            #                    platform=item['platform'], page=item['page'])
 
     """
      获取所有满足条件的num_iid
     """
+
     @classmethod
-    def get_list_id(cls, startDate, endDate, page, platform):
+    def get_list_id(cls, startDate, endDate, start_page, end_page, platform):
         list_id = []
         data = Mongo.mongo_query(tableName=Mongo().mongo_get_tables()['table_list'],
                                  startDate=startDate,
                                  endDate=endDate,
                                  platform=platform,
-                                 page=page)
-        if len(data) > 1:
-            for i in data:
-                list_id.append(i['num_iid'])
-            return list_id
-        else:
-            print(f'没有查询到{startDate}----{endDate}的数据！！！，请验证...')
+                                 start_page=start_page,
+                                 end_page=end_page)
 
-
-
-
+        for i in data:
+            item_info = {'num_iid': i['num_iid'], 'keyword': i['keyword'], 'platform': i['platform'],
+                         'page': i['page']}
+            list_id.append(item_info)
+        return list_id
 
     """
     parse and save to mongo
     """
 
     @classmethod
-    def json_parse(cls, jsons, keyword, platform, page):
+    def json_parse(cls, jsons, keyword, platform, page, ):
         tbale_list = Mongo().mongo_get_tables()['table_list']
         items = jsons['items']['item']
         for item in items:
             Mongo.mongo_insert(tableName=tbale_list, data=item, keyword=keyword,
                                platform=platform, page=page)
+
+    """
+    商品详情数据保存
+    """
+
+    @classmethod
+    def details_parse(cls, jsons, keyword, platform, page, ):
+        tbale_details = Mongo().mongo_get_tables()['table_details']
+        Mongo.mongo_insert(tableName=tbale_details, data=jsons, keyword=keyword,
+                           platform=platform, page=page)
 
     """
     show api-info  
@@ -117,13 +131,13 @@ class Elec(object):
 
     @classmethod
     def get_max_page(cls, data):
-        global max_page
+        max_page = 0
         items = data['items']
         if 'pagecount' in items:
             try:
                 if int(items['pagecount']) > 0:
                     max_page = int(items['pagecount'])
-            except Exception :
+            except Exception:
                 max_page = 0
 
         elif 'page_size' in items:
@@ -138,3 +152,27 @@ class Elec(object):
             return max_page
         else:
             return 50
+
+    # 测试
+    @classmethod
+    def taobao_details(cls):
+
+        table_list = Mongo().mongo_get_tables()['table_list']
+        keywords = ['即食燕窝', '即食花胶', '即食鲍鱼', '即食海参', '佛跳墙', '玻尿酸饮品', '燕窝多肽',
+                    '冻干燕窝', '鱼胶冻']
+
+        for keyword in keywords:
+            items_id = []
+            item_count = table_list.find({'platform': 'taobao', 'keyword': keyword}).count()
+            mongo_data = table_list.find({'platform': 'taobao', 'keyword': keyword}).sort('sales')
+            for i in mongo_data:
+                items_id.append(i)
+
+            # -->请求
+            item_id = items_id[int(item_count - item_count * 0.05):]
+            for item in item_id:
+                data = API_Request().get_details(platform=item['platform'],
+                                                 num_iid=item['num_iid'])
+                print(data['item']['num_iid'])
+                Elec.details_parse(jsons=data['item'], keyword=keyword,
+                                   platform='taobao', page=1)
