@@ -12,7 +12,7 @@ import json5
 import requests
 import os
 from sequence import Sequence
-
+from redis_mq import RedisMQ
 
 class API_Request(object):
     headers = {
@@ -42,8 +42,10 @@ class API_Request(object):
         data = Sequence.validation_data(json5.loads(responses.text, encoding='utf-8', ))
         if data is not None:
             return data
+        # 使用redis记录异常请求的请求信息
         else:
-            API_Request.write_id(num_iid=num_iid)
+            redis_msg = {'num_iid':num_iid,'platform':platform}
+            RedisMQ().redis_push(name='abnormal_urls',push_msg=redis_msg)
 
     # 搜索url
     def create_search_urls(self, platform, kwargs: dict):
@@ -88,8 +90,3 @@ class API_Request(object):
 
         return details_url[platform]
 
-    #  记录请求失败的id
-    @classmethod
-    def write_id(cls, num_iid):
-        with open('item_id.txt', 'a+') as f:
-            f.write(str(num_iid) + '\n')

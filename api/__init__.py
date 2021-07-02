@@ -17,12 +17,14 @@ from elec import Elec
 
 # 商品详情获取
 
-items = Elec.get_list_id(startDate='2021-06-01',
-                         endDate='2021-06-31',
-                         start_page=0,
-                         end_page=11,
-                         platform='jingdong')
-Elec.api_details(items=items)
+item_count = Elec.get_list_id(startDate='2021-06-01',
+                              endDate='2021-06-31',
+                              start_page=0,
+                              end_page=11,
+                              platform='jingdong')
+
+for i in range(0, item_count):
+    Elec.api_details(redis_key='details_urls')
 
 # 淘宝测试
 # Elec().taobao_details()

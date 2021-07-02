@@ -11,7 +11,7 @@ class Sequence(object):
 
     # Determine whether it is empty
     @classmethod
-    def kill_list_none(cls, data:dict):
+    def kill_list_none(cls, data: dict):
         # 请求验证
         try:
             if data['items']['item']:
@@ -22,19 +22,16 @@ class Sequence(object):
         except KeyError:
             print('==>key错误,字典中没有item属性...')
 
-    # 检验data是否正常
+    # 检验data是否正常,设置必须带的属性
     @classmethod
-    def validation_data(cls, data):
+    def validation_data(cls, data: dict,):
         try:
-            num_iid = data['item']['num_iid']
-            title = data['item']['title']
-            if num_iid and title is not None:
-                print('--> data正常')
+            price = data['item']['price']
+            if float(price) != 0:
                 return data
 
         except Exception as e:
             print(data)
             print('==> 返回值检验未通过....')
             return None
-
 

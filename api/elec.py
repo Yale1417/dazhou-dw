@@ -10,6 +10,7 @@ from api_request import API_Request
 from sequence import Sequence
 from mongo import Mongo
 import time
+from redis_mq import RedisMQ
 
 
 class Elec(object):
@@ -63,17 +64,17 @@ class Elec(object):
 
     # -->2. api_details 获取详情
     @classmethod
-    def api_details(cls, items: dict):
-        for item in items:
-            print(item)
-            data = API_Request().get_details(platform=item['platform'],
-                                             num_iid=item['num_iid'])
+    def api_details(cls, redis_key):
+        request_data = eval(RedisMQ().redis_pop(redis_key))
+        data = API_Request().get_details(platform=request_data['platform'],
+                                         num_iid=request_data['num_iid'])
+        print(data)
 
-            # data['keyword'] = item['keyword']
-            # data['platform'] = item['platform']
-            # data['page'] = item['page']
-            # Elec.details_parse(jsons=data['item'], keyword=item['keyword'],
-            #                    platform=item['platform'], page=item['page'])
+        # data['keyword'] = item['keyword']
+        # data['platform'] = item['platform']
+        # data['page'] = item['page']
+        # Elec.details_parse(jsons=data['item'], keyword=item['keyword'],
+        #                    platform=item['platform'], page=item['page'])
 
     """
      获取所有满足条件的num_iid
@@ -81,19 +82,26 @@ class Elec(object):
 
     @classmethod
     def get_list_id(cls, startDate, endDate, start_page, end_page, platform):
-        list_id = []
         data = Mongo.mongo_query(tableName=Mongo().mongo_get_tables()['table_list'],
                                  startDate=startDate,
                                  endDate=endDate,
                                  platform=platform,
                                  start_page=start_page,
                                  end_page=end_page)
+        # 判断是否重新导入到redis
+        redis_count = RedisMQ().redis_len(name='details_urls')
+        is_add = input(f'==>当前已有【{redis_count}】个请求在队列中，是否清空details_urls重新添加？\n==>y/n?')
+        if is_add == 'y':
+            RedisMQ().redis_delete('details_urls')
+            for i in data:
+                item_info = {'num_iid': i['num_iid'], 'keyword': i['keyword'], 'platform': i['platform'],
+                             'page': i['page']}
+                RedisMQ().redis_push(name='details_urls', push_msg=item_info)
+            print('==>重新添加成功~')
+            return RedisMQ().redis_len(name='details_urls')
 
-        for i in data:
-            item_info = {'num_iid': i['num_iid'], 'keyword': i['keyword'], 'platform': i['platform'],
-                         'page': i['page']}
-            list_id.append(item_info)
-        return list_id
+        else:
+            return RedisMQ().redis_len(name='details_urls')
 
     """
     parse and save to mongo
