@@ -7,14 +7,8 @@
 # @Software: PyCharm
 # @class :
 
-import redis
+import hanlp
+text = '邦成即食人参燕窝10瓶/礼盒装中老年 成人滋补品节日送礼 送朋友'
+HanLP = hanlp.load(hanlp.pretrained.mtl.CLOSE_TOK_POS_NER_SRL_DEP_SDP_CON_ELECTRA_SMALL_ZH)
 
-import redis
-
-publisher = redis.Redis(host='192.168.0.16', port=6379)
-message = ""
-channel = "test"
-while message != "exit":
-    message = input("")
-    send_message = "Python : " + message
-    publisher.publish(channel, send_message)
+print(HanLP(text, tasks='ner/msra'))

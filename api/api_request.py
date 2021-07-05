@@ -14,6 +14,7 @@ import os
 from sequence import Sequence
 from redis_mq import RedisMQ
 
+
 class API_Request(object):
     headers = {
         "Accept-Encoding": "gzip",
@@ -31,21 +32,26 @@ class API_Request(object):
         # 打印请求链接
         print(base_url)
         responses = requests.get(url=base_url, headers=self.headers, )
-
-        data = json5.loads(responses.content, encoding='utf-8')
-        return data
+        try:
+            data = json5.loads(responses.content, encoding='utf-8')
+            return data
+        except Exception:
+            pass
 
     # 详情列表
     def get_details(self, platform, num_iid):
         base_url = API_Request().create_details_urls(platform=platform, num_iid=num_iid)
-        responses = requests.get(url=base_url, headers=self.headers,)
-        data = Sequence.validation_data(json5.loads(responses.text, encoding='utf-8', ))
-        if data is not None:
-            return data
-        # 使用redis记录异常请求的请求信息
-        else:
-            redis_msg = {'num_iid':num_iid,'platform':platform}
-            RedisMQ().redis_push(name='abnormal_urls',push_msg=redis_msg)
+        responses = requests.get(url=base_url, headers=self.headers, )
+        try:
+            data = Sequence.validation_data(json5.loads(responses.text, encoding='utf-8', ))
+            if data is not None:
+                return data
+            # 使用redis记录异常请求的请求信息
+            else:
+                redis_msg = {'num_iid': num_iid, 'platform': platform}
+                RedisMQ().redis_push(name='abnormal_urls', push_msg=redis_msg)
+        except Exception:
+            pass
 
     # 搜索url
     def create_search_urls(self, platform, kwargs: dict):
@@ -89,4 +95,5 @@ class API_Request(object):
                        }
 
         return details_url[platform]
+
 

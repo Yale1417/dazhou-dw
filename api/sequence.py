@@ -19,8 +19,9 @@ class Sequence(object):
             else:
                 print('--> item列表为空')
                 return None
-        except KeyError:
-            print('==>key错误,字典中没有item属性...')
+        except Exception as e:
+            print('==>字典中没有item属性...')
+            print(e)
 
     # 检验data是否正常,设置必须带的属性
     @classmethod
@@ -28,10 +29,17 @@ class Sequence(object):
         try:
             price = data['item']['price']
             if float(price) != 0:
-                return data
+                if data['error'] =='':
+                    return data
+                else:
+                    print(data)
+                    print('===> 数据出错... ')
+
+
 
         except Exception as e:
             print(data)
             print('==> 返回值检验未通过....')
-            return None
+
+
 

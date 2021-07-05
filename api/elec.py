@@ -52,7 +52,7 @@ class Elec(object):
                                         page=page,
                                         maxPage=max_page,
                                         platform=platform)
-                    time.sleep(1)
+
             else:
                 for page in range(start_page, end_page):
                     Elec.search_request(keyword=keyword,
@@ -68,13 +68,15 @@ class Elec(object):
         request_data = eval(RedisMQ().redis_pop(redis_key))
         data = API_Request().get_details(platform=request_data['platform'],
                                          num_iid=request_data['num_iid'])
-        print(data)
+        if data:
+            data['keyword'] = request_data['keyword']
+            data['platform'] = request_data['platform']
+            data['page'] = request_data['page']
+            print(f"==> 当前执行【{data['platform']}】----{data['keyword']}------{request_data['num_iid']}")
+            Elec.details_parse(jsons=data['item'], keyword=data['keyword'],
+                               platform=data['platform'], page=data['page'])
 
-        # data['keyword'] = item['keyword']
-        # data['platform'] = item['platform']
-        # data['page'] = item['page']
-        # Elec.details_parse(jsons=data['item'], keyword=item['keyword'],
-        #                    platform=item['platform'], page=item['page'])
+
 
     """
      获取所有满足条件的num_iid
