@@ -12,7 +12,7 @@ import json5
 import requests
 import os
 from sequence import Sequence
-from redis_mq import RedisMQ
+from db.redis_mq import RedisMQ
 
 
 class API_Request(object):
@@ -91,9 +91,11 @@ class API_Request(object):
                                    f"&num_iid={num_iid}",
                        'pdd': f"https://api-gw.onebound.cn/pinduoduo/item_get/"
                               f"?key={self.key}&secret={self.secret}"
-                              f"&num_iid={num_iid}"
+                              f"&num_iid={num_iid}",
+                       'suning': f"https://api-gw.onebound.cn/suning/item_get/"
+                                 f"?key={self.key}&secret={self.secret}"
+                                 f"&num_iid={num_iid}",
+
                        }
 
         return details_url[platform]
-
-

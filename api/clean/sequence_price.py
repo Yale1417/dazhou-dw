@@ -13,8 +13,9 @@ class Sequence_Price(object):
     # ==> 1.验证价格
     @classmethod
     def sequence_price(cls, price):
-        price = float(price)
-        return price
+        if price:
+            price = float(price)
+            return price
 
     # ==> 2.验证折扣
     @classmethod

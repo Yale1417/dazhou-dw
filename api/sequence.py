@@ -25,21 +25,20 @@ class Sequence(object):
 
     # 检验data是否正常,设置必须带的属性
     @classmethod
-    def validation_data(cls, data: dict,):
+    def validation_data(cls, data: dict, ):
         try:
             price = data['item']['price']
-            if float(price) != 0:
-                if data['error'] =='':
-                    return data
-                else:
-                    print(data)
-                    print('===> 数据出错... ')
+            if price:
+                if float(price) != 0:
+                    if data['error'] == '':
+                        return data
+                    else:
+                        print(data)
+                        print('===> 数据出错... ')
 
 
 
         except Exception as e:
             print(data)
+            print(e)
             print('==> 返回值检验未通过....')
-
-
-

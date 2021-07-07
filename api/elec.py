@@ -8,9 +8,8 @@
 # @class : Get all the data from the api
 from api_request import API_Request
 from sequence import Sequence
-from mongo import Mongo
-import time
-from redis_mq import RedisMQ
+from db.mongo_db import Mongo
+from db.redis_mq import RedisMQ
 
 
 class Elec(object):

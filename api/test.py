@@ -8,7 +8,7 @@
 # @class :
 
 import hanlp
-text = '邦成即食人参燕窝10瓶/礼盒装中老年 成人滋补品节日送礼 送朋友'
+text = '冰糖官燕:即食冰糖官燕70g*8礼盒葡萄'
 HanLP = hanlp.load(hanlp.pretrained.mtl.CLOSE_TOK_POS_NER_SRL_DEP_SDP_CON_ELECTRA_SMALL_ZH)
 
-print(HanLP(text, tasks='ner/msra'))
+print(HanLP(text, ))
