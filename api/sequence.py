@@ -23,6 +23,24 @@ class Sequence(object):
             print('==>字典中没有item属性...')
             print(e)
 
+    @classmethod
+    def validation_code(cls, data: dict):
+        code_status = data['error_code']
+        if code_status == '0000':
+            return code_status, data
+        elif code_status == '2000':
+            print('===> 没有获取到该信息...')
+            return code_status, None
+        elif code_status == '5000':
+            print('===> 数据未知错误...')
+            return code_status, None
+        elif code_status == '4017':
+            print('===> 请求超时...')
+            return code_status, None
+        else:
+            print(f'===> 【状态码】{code_status}')
+            return code_status, None
+
     # 检验data是否正常,设置必须带的属性
     @classmethod
     def validation_data(cls, data: dict, ):

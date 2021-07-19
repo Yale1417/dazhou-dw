@@ -7,32 +7,43 @@
 # @Software: PyCharm
 # @class : 所有价格参数的验证
 
+"""
+字段说明:
+1.price_id   ---> 数据库处理
+2.price
+3.orginal_price
+4.range_price ---> 后续处理
+5.is_promotion
+6.discount_level
+7.price_level ----> 后续处理
+
+"""
+
 
 class Sequence_Price(object):
 
-    # ==> 1.验证价格
-    @classmethod
-    def sequence_price(cls, price):
-        if price:
-            price = float(price)
-            return price
-
-    # ==> 2.验证折扣
     @classmethod
     def sequence_discount(cls, price, org_price):
-        price = float(price)
-        org_price = float(org_price)
+        if price:
+            price = float(price)
+            org_price = float(org_price)
         try:
             if price < org_price:
-                is_promotion = 1
+                is_promotion = True
                 discount_level = int(price / org_price * 100)
-                return is_promotion, discount_level
+                price_info = {'is_promotion': is_promotion,
+                              'discount_level': discount_level,
+                              'price': price,
+                              'orginal_price': org_price,
+                              }
+                return price_info
             else:
-                is_promotion = 0
-                discount_level = 0
-                return is_promotion, discount_level
+                price_info = {'is_promotion': False,
+                              'discount_level': 0,
+                              'price': price,
+                              'orginal_price': org_price,
+                              }
+                return price_info
         except Exception as e:
             print(e)
-            is_promotion = 0
-            discount_level = 0
-            return is_promotion, discount_level
+

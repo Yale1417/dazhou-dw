@@ -1,0 +1,3 @@
+#!/home/latent-lxx/Latent/Latent/dazhou-dw/python/bin/python
+from numba.pycc import main
+main()

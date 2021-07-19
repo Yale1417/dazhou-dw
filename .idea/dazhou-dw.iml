@@ -2,6 +2,11 @@
 <module type="PYTHON_MODULE" version="4">
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/api" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/api/api_test" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/api/clean" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/api/db" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/api/decorator" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/python" />
       <excludeFolder url="file://$MODULE_DIR$/python3.9" />
     </content>

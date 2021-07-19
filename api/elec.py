@@ -64,31 +64,40 @@ class Elec(object):
     # -->2. api_details 获取详情
     @classmethod
     def api_details(cls, redis_key):
-        request_data = eval(RedisMQ().redis_pop(redis_key))
-        data = API_Request().get_details(platform=request_data['platform'],
-                                         num_iid=request_data['num_iid'])
-        if data:
-            data['keyword'] = request_data['keyword']
-            data['platform'] = request_data['platform']
-            data['page'] = request_data['page']
-            print(f"==> 当前执行【{data['platform']}】----{data['keyword']}------{request_data['num_iid']}")
-            Elec.details_parse(jsons=data['item'], keyword=data['keyword'],
-                               platform=data['platform'], page=data['page'])
+        if redis_key == 'abnormal_urls':
+            request_data = eval(RedisMQ().redis_pop(redis_key))
+            data = API_Request().get_details(platform=request_data['platform'],
+                                             num_iid=request_data['num_iid'])
+            if data:
+                print(f"==> 当前执行---{request_data['num_iid']}")
+                Elec.details_parse(jsons=data['item'], keyword='',
+                                   platform='', page='')
 
-
+        else:
+            request_data = eval(RedisMQ().redis_pop(redis_key))
+            data = API_Request().get_details(platform=request_data['platform'],
+                                             num_iid=request_data['num_iid'])
+            if data:
+                data['keyword'] = request_data['keyword']
+                data['platform'] = request_data['platform']
+                data['page'] = request_data['page']
+                print(f"==> 当前执行【{data['platform']}】----{data['keyword']}------{request_data['num_iid']}")
+                Elec.details_parse(jsons=data['item'], keyword=data['keyword'],
+                                   platform=data['platform'], page=data['page'])
 
     """
      获取所有满足条件的num_iid
     """
 
     @classmethod
-    def get_list_id(cls, startDate, endDate, start_page, end_page, platform):
+    def get_list_id(cls, startDate, endDate, start_page, end_page, platform, keyword=None):
         data = Mongo.mongo_query(tableName=Mongo().mongo_get_tables()['table_list'],
                                  startDate=startDate,
                                  endDate=endDate,
                                  platform=platform,
                                  start_page=start_page,
-                                 end_page=end_page)
+                                 end_page=end_page,
+                                 keyword=keyword)
         # 判断是否重新导入到redis
         redis_count = RedisMQ().redis_len(name='details_urls')
         is_add = input(f'==>当前已有【{redis_count}】个请求在队列中，是否清空details_urls重新添加？\n==>y/n?')
@@ -161,27 +170,3 @@ class Elec(object):
             return max_page
         else:
             return 50
-
-    # 测试
-    @classmethod
-    def taobao_details(cls):
-
-        table_list = Mongo().mongo_get_tables()['table_list']
-        keywords = ['即食燕窝', '即食花胶', '即食鲍鱼', '即食海参', '佛跳墙', '玻尿酸饮品', '燕窝多肽',
-                    '冻干燕窝', '鱼胶冻']
-
-        for keyword in keywords:
-            items_id = []
-            item_count = table_list.find({'platform': 'taobao', 'keyword': keyword}).count()
-            mongo_data = table_list.find({'platform': 'taobao', 'keyword': keyword}).sort('sales')
-            for i in mongo_data:
-                items_id.append(i)
-
-            # -->请求
-            item_id = items_id[int(item_count - item_count * 0.05):]
-            for item in item_id:
-                data = API_Request().get_details(platform=item['platform'],
-                                                 num_iid=item['num_iid'])
-                print(data['item']['num_iid'])
-                Elec.details_parse(jsons=data['item'], keyword=keyword,
-                                   platform='taobao', page=1)

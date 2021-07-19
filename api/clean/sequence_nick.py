@@ -6,7 +6,16 @@
 # @File : sequence_nick.py
 # @Software: PyCharm
 # @class : 清晰店铺的相关信息
-import hanlp
+"""
+字段说明：
+1.nick_id ---->数据库自增
+2.nick_name
+3.nick
+4.brand
+5.company_name
+6.platform
+"""
+from tools_class import Tools_Class
 
 
 class Sequence_Nick(object):
@@ -14,9 +23,32 @@ class Sequence_Nick(object):
     # 品牌提取
     @classmethod
     def sequence_brand(cls, data):
-        if 'brand' in data:
-            brand = data['brand']
-            if len(brand) < 2:
-                HanLP = hanlp.load(hanlp.pretrained.mtl.CLOSE_TOK_POS_NER_SRL_DEP_SDP_CON_ELECTRA_SMALL_ZH)
-                ner = HanLP(data['title'], tasks='ner/msra')
-                print(ner)
+        # 1. 店铺名称
+        try:
+            seller = data['seller']
+        except KeyError as k:
+            seller = data['seller_nick']
+            if seller is None:
+                seller = data['public']['nick']
+
+        # 2.店铺编号
+        sid = Tools_Class.tools_md5(nick=seller)
+        # 3. 品牌
+        brand = data['public']['brand']
+        # 4. 平台
+        platform = data['platform']
+        if platform == 'taobao':
+            tmall = data['public']['tmall']
+            if tmall:
+                platform = 'tmall'
+            else:
+                platform = 'taobao'
+
+        platform = {
+            'seller': seller,
+            'nick_id': sid,
+            'brand': brand,
+            'platform': platform
+        }
+
+        return platform
