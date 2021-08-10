@@ -52,10 +52,78 @@ class Tools_Class(object):
 
     # 5. 正则获取
     @classmethod
-    def tools_regular_str(cls,string, _re):
+    def tools_regular_str(cls, string, _re):
         new_string = re.findall(_re, string)
         if new_string:
             return new_string
         else:
             return ['']
 
+    # 6. 根据地名分割省份和城 并 返回城等级
+    @classmethod
+    def tools_spi_city(cls, cityName):
+
+        if cityName:
+            with open('clean/json_file/city_name.json', 'r') as f:
+                city_json = eval(f.read())
+
+            with open('clean/json_file/city_level.json', 'r') as r:
+                city_level = eval(r.read())
+
+            for city in city_json:
+                set1 = set(city['name'])
+                set2 = set(cityName)
+                if len(set1 & set2) > 1:
+                    # 城市分割
+                    if city['name'] in ['上海', '北京', '重庆', '天津']:
+                        _province = city['name']
+                        _city = city['name']
+                    else:
+                        _province = city['name']
+                        _city = cityName.replace(city['name'], '')
+                    """
+                    注意：浙江杭州　->需要匹配浙江杭州市
+                    """
+                    # 城市等级
+                    for level in city_level:
+                        for _city_level in city_level[level]:
+                            if _city_level in _city:
+                                reslut_level = level
+                                city_info = {
+                                    'province': _province,
+                                    'city': _city_level,
+                                    'city_level': reslut_level,
+                                }
+                                return city_info
+
+                            city_info = {
+                                'province': _province,
+                                'city': _city,
+                                'city_level': '',
+                            }
+                            return city_info
+                else:
+                    city_info = {
+                        'province': '',
+                        'city': '',
+                        'city_level': '',
+                    }
+                    return city_info
+        else:
+            city_info = {
+                'province': '',
+                'city': '',
+                'city_level': '',
+            }
+            return city_info
+
+
+
+    # 7. 正则获取数字
+    @classmethod
+    def tools_regular_digital(cls, string):
+        digital = ''.join(re.findall(r'\d+', string))
+        if digital:
+            return int(digital)
+        else:
+            return 0

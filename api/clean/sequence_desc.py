@@ -39,20 +39,41 @@ class Sequence_Desc(object):
         keyword_str = '/'.join(extract_keyword)
         # 规格 /单位提取  ---->cardinal数量
         extract_specis = Tools_Class.tools_regular_str(string=title,
-                                                       _re=r'\d+[a-z A-z]+',)[0]
+                                                       _re=r'\d+[a-z A-z]+', )[0]
         extract_cardinal = Tools_Class.tools_regular_str(string=title,
                                                          _re=r'\d+[\u4e00-\u9fa5]')[0]
-        desc_latitude = {'pic_num': len(pic_list),
-                         'video_num': len(video_list),
-                         'props_num': len(props_list),
+        _func_len = (lambda x: len(x) if (type(x) is list) else 0)
+        desc_latitude = {'pic_num': _func_len(pic_list),
+                         'video_num': _func_len(video_list),
+                         'props_num': _func_len(props_list),
                          'title': title,
                          'extract_word': keyword_str,
-                         'extract_specis':extract_specis,
-                         'extract_cardinal':extract_cardinal,
+                         'extract_specis': extract_specis,
+                         'extract_cardinal': extract_cardinal,
                          }
-        print(desc_latitude)
+        return desc_latitude
 
     # ==> 2.商品简介
     @classmethod
     def sequence_title(cls, title):
-        pass
+        # 提取关键词
+        extract_keyword = []
+        extract_word = Tools_Class.tools_nlp_nn(title=title, )
+        han_tok = extract_word['tok/fine']
+        han_pos = extract_word['pos/ctb']
+        for tok, pos in zip(han_tok, han_pos):
+            if pos == 'NN':
+                extract_keyword.append(tok)
+        keyword_str = '/'.join(extract_keyword)
+        # 规格 /单位提取  ---->cardinal数量
+        extract_specis = Tools_Class.tools_regular_str(string=title,
+                                                       _re=r'\d+[a-z A-z]+', )[0]
+        extract_cardinal = Tools_Class.tools_regular_str(string=title,
+                                                         _re=r'\d+[\u4e00-\u9fa5]')[0]
+        desc_latitude = {
+                         'title': title,
+                         'extract_word': keyword_str,
+                         'extract_specis': extract_specis,
+                         'extract_cardinal': extract_cardinal,
+                         }
+        return desc_latitude

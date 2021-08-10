@@ -7,6 +7,8 @@
       <sourceFolder url="file://$MODULE_DIR$/api/clean" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/api/db" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/api/decorator" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/api/clean/json_file" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/api/etl" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/python" />
       <excludeFolder url="file://$MODULE_DIR$/python3.9" />
     </content>

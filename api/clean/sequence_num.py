@@ -22,7 +22,8 @@ class Sequence_Num(object):
     def sequence_num_level(cls, data):
         platform = data['platform']
         if platform != 'pdd':
-            item_num = int(data['public']['num'])
+            _func_none = (lambda x: x if type(x) == int else 0)
+            item_num = int(_func_none(data['public']['num']))
             if item_num <= 50:
                 num_level = '紧张'
             elif 50 < item_num <= 100:

@@ -34,6 +34,8 @@ class Sequence_Date(object):
         date_indo = {'time_year': date_year,
                      'time_month': date_month,
                      'time_day': date_day,
-                     'time_stamp': time_stamp}
+                     'time_stamp': time_stamp,
+                     'time_date': data['request_date'],
+                     }
 
         return date_indo

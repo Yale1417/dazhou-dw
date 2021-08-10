@@ -32,6 +32,11 @@ class Mongo(object):
                   }
         return tables
 
+    # 1.输入数据库、表名后获取该表
+    def mongo_get_table_public(self, databaseName, collectionName):
+        return self.mongo[databaseName][collectionName]
+
+
     @classmethod
     def mongo_index(cls, tableName, indexName):
         try:
@@ -47,7 +52,6 @@ class Mongo(object):
     def mongo_insert(cls, tableName, data, keyword, platform, page, id_tuple: tuple):
         # add to keyword/_id/request_time/
         data['keyword'] = keyword
-        data['request_date'] = time.strftime('%Y-%m-%d')
         data['platform'] = platform
         data['page'] = page
         # _id 规则:tuple + request_date  ===>md5
@@ -69,43 +73,30 @@ class Mongo(object):
     """
 
     @classmethod
-    def mongo_query(cls, tableName, startDate, endDate, start_page, end_page, platform, keyword=None):
-        if keyword:
-            # 日期条件筛选
-            match = {
-                "$match": {"$and": [{"page": {"$gt": start_page,
-                                              "$lt": end_page}},
-                                    {"request_date": {"$gte": startDate,
-                                                      "$lte": endDate}},
-                                    {"platform": platform},
-                                    {'keyword': keyword}
-                                    ]
-                           }
-            }
-            data = tableName.aggregate([match])
-            return data
-        else:
-            print('2222')
-            # 日期条件/keyword筛选
-            match = {
-                "$match": {"$and": [{"page": {"$gt": start_page,
-                                              "$lt": end_page}},
-                                    {"request_date": {"$gte": startDate,
-                                                      "$lte": endDate}},
-                                    {"platform": platform},
-                                    ]
-                           }
-            }
-            data = tableName.aggregate([match])
-            return data
+    def mongo_query(cls, tableName, startDate, endDate, platform, keyword):
+        # 日期条件筛选
+        match = {
+            "$match": {"$and": [{"request_date": {"$gte": startDate,
+                                                  "$lte": endDate}},
+                                {"platform": platform},
+                                {'keyword': keyword}
+                                ]
+                       }
+        }
+        data = tableName.aggregate([match])
+        return data
 
     # ===>4. 验证list和detail的数据对应的完整性 ----> 返回完成的数据和未完成数据的id
     # ===>注意！聚合后，仅返回public[0]的数据，故传入日期的时间要分清楚月底和月初
+    # ====>【2021/07/30】 添加 ---> return osd_list
     @classmethod
-    def mongo_data_describe(cls, tableName, startDate, endDate, platform, keyword, start_page, end_page,
-                            isCustom=False):
+    def mongo_data_describe(cls, tableName, startDate, endDate, platform, keyword, isCustom=False):
+        # 监听查询时间
+        mongo_start_time = time.time()
         unfinished_data = []
         finished_data = []
+        ods_list = []
+
         lookup = {'$lookup': {'from': 'ods_elec_goods_details',
                               'localField': 'num_iid',
                               'foreignField': 'num_iid',
@@ -113,14 +104,13 @@ class Mongo(object):
                               }
                   }
         match = {
-            "$match": {"$and": [{"page": {"$gte": start_page,
-                                          "$lte": end_page}},
-                                {"request_date": {"$gte": startDate,
-                                                  "$lte": endDate}},
-                                {"platform": platform},
-                                {"keyword": keyword},
-                                ]
-                       }
+            "$match": {"$and": [
+                {"request_date": {"$gte": startDate,
+                                  "$lte": endDate}},
+                {"platform": platform},
+                {"keyword": keyword},
+            ]
+            }
         }
         project = {
             "$project": {
@@ -158,6 +148,7 @@ class Mongo(object):
         unwind = {
             '$unwind': "$public"
         }
+
         # 从表过滤----> 自定义设置
 
         if isCustom:
@@ -174,31 +165,54 @@ class Mongo(object):
                                                    "$lte": endDate}
                            }
             }
-        print(match_slave)
+
+        # 匹配源数据中列表数据
+        ods_list_match = {"$and": [{"request_date": {"$gte": startDate, "$lte": endDate}},
+                                   {"platform": platform},
+                                   {"keyword": keyword},
+                                   ]
+                          }
         pipelines = [match, lookup, unwind, match_slave, project]
         data = tableName.aggregate(pipelines)
-        list_count = tableName.count({"$and": [{"request_date": {"$gte": startDate, "$lte": endDate}},
-                                               {"platform": platform},
-                                               {"keyword": keyword},
-                                               ]
-                                      })
+        list_count = tableName.count(ods_list_match)
+        ods_data = tableName.find(ods_list_match)
+        # 商品列表数据集合
+        list(map(lambda x: ods_list.append(x),ods_data))
+        # 对应的商品列表数据集合
         list(map(lambda x: finished_data.append(x) if x['public'] else unfinished_data.append(x), data))
         finished_count = len(finished_data)
         unfinished_count = len(unfinished_data)
+        # 查询时间
+        mongo_end_time = time.time()-mongo_start_time
         describe_info = {'count': finished_count + unfinished_count,
                          'finished_count': finished_count,
                          'unfinished_count': unfinished_count,
                          'finished_item': finished_data,
                          'unfinished_item': unfinished_data,
+                         'ods_list': ods_list,
                          }
+
         print("=====================================================================\n"
+              f"【查询时间】: {mongo_end_time}\n"
               f"【日期】: {startDate}----{endDate}\n"
-              f"【页面限制】: {start_page}----{end_page}\n"
               f"【平台】: {platform}\n"
               f"【类别】: {keyword}\n"
               f"【item列表总数据】: {list_count}\n"
               f"【对应数据总共】: {describe_info['count']}\n"
               f"【匹配成功数据】: {describe_info['finished_count']}\n"
               f"【缺失数据】: {describe_info['unfinished_count']}\n"
+              f"【从表过滤条件】: {match_slave}\n"
               "=====================================================================")
         return describe_info
+
+    # ==>５．清洗完数据导入mongoDb ---> 表名：dwd_目标主题_当前数据用途_脚本标识_时间标识
+    @classmethod
+    def mongo_insert_public(cls, tableName, data, id_tuple: tuple):
+        # 元组拆出并拼接
+        id_str = ''.join(list(map(lambda x: str(x), id_tuple)))
+        data['_id'] = hashlib.md5(bytes(id_str, encoding='utf-8')).hexdigest()
+        try:
+            tableName.insert(data)
+        except DuplicateKeyError:
+            print(f'==> 【{tableName}】中_id重复....')
+

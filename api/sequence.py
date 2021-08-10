@@ -6,7 +6,8 @@
 # @File : filter.py
 # @Software: PyCharm
 # @class : 序列器 -> 对所有的json进行验证
-
+from db.redis_mq import RedisMQ
+import json
 class Sequence(object):
 
     # Determine whether it is empty
@@ -23,23 +24,34 @@ class Sequence(object):
             print('==>字典中没有item属性...')
             print(e)
 
+    # 请求状态验证
     @classmethod
-    def validation_code(cls, data: dict):
-        code_status = data['error_code']
+    def validation_code(cls, validation_data: dict):
+        # 验证响应代码
+        jsons = validation_data['item']
+        num_iid = validation_data['num_iid']
+        platform = validation_data['platform']
+        keyword = validation_data['keyword']
+        code_status = jsons['error_code']
         if code_status == '0000':
-            return code_status, data
-        elif code_status == '2000':
-            print('===> 没有获取到该信息...')
-            return code_status, None
-        elif code_status == '5000':
-            print('===> 数据未知错误...')
-            return code_status, None
-        elif code_status == '4017':
-            print('===> 请求超时...')
-            return code_status, None
+            return jsons
+        elif code_status in ['2000', '4006', '4007', '4008', '4016', '4017']:
+            redis_msg = {'code_status': code_status,
+                         'num_iid': num_iid,
+                         'platform': platform,
+                         'keyword': keyword}
+            RedisMQ().redis_push(name='abnormal_urls', push_msg=redis_msg)
+            print('===> 【请求异常】已存入RedisMQ...')
         else:
-            print(f'===> 【状态码】{code_status}')
-            return code_status, None
+            redis_msg = {'code_status': code_status,
+                         'num_iid': num_iid,
+                         'platform': platform,
+                         'keyword': keyword}
+            RedisMQ().redis_push(name='abnormal_urls', push_msg=redis_msg)
+            print('===> 【请求异常】已存入RedisMQ...')
+
+
+
 
     # 检验data是否正常,设置必须带的属性
     @classmethod
