@@ -12,7 +12,8 @@ import redis
 
 class RedisMQ(object):
     def __init__(self):
-        self.redis_mq = redis.Redis(host='127.0.0.1', port='6379', db=1, decode_responses=True, charset='UTF-8', encoding='UTF-8')
+        self.redis_mq = redis.Redis(host='127.0.0.1', port='6379', db=1, decode_responses=True, charset='UTF-8',
+                                    encoding='UTF-8',health_check_interval=30)
 
     # ==> 1. Producer
     def redis_push(self, name: str, push_msg: dict):
@@ -37,9 +38,22 @@ class RedisMQ(object):
         count = self.redis_mq.llen(name)
         return count
 
-    # ==> 4.清空队列
+    # ==> 4.获取所有的key
+    def redis_getkey(self):
+        keys = self.redis_mq.scan_iter()
+        return list(keys)
+
+
+    # ==> 5.清空队列
     def redis_delete(self, redis_key):
         self.redis_mq.delete(redis_key)
         return 'ok'
+
+    # ==> 6.url 去重集合
+    def redis_set(self, msg):
+        pass
+
+
+
 
 

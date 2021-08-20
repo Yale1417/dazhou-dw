@@ -3,6 +3,7 @@
   <component name="SqlDialectMappings">
     <file url="file://$PROJECT_DIR$/api/db/clickhouse_dw.py" dialect="GenericSQL" />
     <file url="file://$PROJECT_DIR$/api/db/mysql_db.py" dialect="GenericSQL" />
+    <file url="file://$PROJECT_DIR$/api/etl/tmp_supplement_detailsl.py" dialect="GenericSQL" />
     <file url="file://$PROJECT_DIR$/api/test.py" dialect="GenericSQL" />
   </component>
 </project>

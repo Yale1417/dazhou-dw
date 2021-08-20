@@ -46,3 +46,13 @@ class MYSQL(object):
             print(f"{where['num_iid']}==> 价格修改成功！")
         except Exception as e:
             print(e)
+
+    # 查询
+    def mysql_query(self, query_str):
+        _sql = query_str
+        try:
+            self.cur.execute(_sql)
+            data = self.cur.fetchall()
+            return data
+        except Exception as e:
+            print(e)

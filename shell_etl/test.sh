@@ -1,0 +1,1 @@
+python /home/latent-lxx/Latent/Latent/dazhou-dw/kettle_etl/test.py
